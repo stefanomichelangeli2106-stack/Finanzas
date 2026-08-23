@@ -214,6 +214,38 @@
     </div>
   </div>
 
+  <div class="card tag-savings">
+    <h2>Ya tenés ahorrado <span class="total mono" id="totalSavingsBalance">$0</span></h2>
+    <p class="fixed-hint">Plata que ya tenías ahorrada antes de usar la app (en la moneda que sea). No se resta de tu saldo mensual, solo se suma al "Total ahorrado" de arriba.</p>
+    <div id="listSavingsBalance"></div>
+    <div class="add-row">
+      <input class="f-name" id="savingsBalanceName" placeholder="Ej: Plazo fijo Banco X">
+      <input class="f-amount" id="savingsBalanceAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="savingsBalanceCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
+      <button id="addSavingsBalanceBtn">Agregar</button>
+    </div>
+  </div>
+
+  <div class="card tag-invest">
+    <h2>Ya tenés invertido <span class="total mono" id="totalInvestBalance">$0</span></h2>
+    <p class="fixed-hint">Plata que ya tenías invertida antes de usar la app (en la moneda que sea). No se resta de tu saldo mensual, solo se suma al "Total invertido" de arriba.</p>
+    <div id="listInvestBalance"></div>
+    <div class="add-row">
+      <input class="f-name" id="investBalanceName" placeholder="Ej: Acciones">
+      <input class="f-amount" id="investBalanceAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="investBalanceCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
+      <button id="addInvestBalanceBtn">Agregar</button>
+    </div>
+  </div>
+
   <div class="rate-card">
     <h2>Tipo de cambio</h2>
     <p class="rate-hint">Cargalo vos con la cotización del día (por ejemplo mirando dolarapi.com) — no se actualiza sola. Se usa para convertir a pesos todo lo que cargues en dólares o reales.</p>
@@ -410,7 +442,7 @@ const CURRENCIES = {
 };
 
 let currentUser = null;
-let state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
+let state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {}, savingsBalance: [], investBalance: [] };
 let currentMonth = todayKey();
 
 function todayKey(){
@@ -491,13 +523,15 @@ function uid(){ return Math.random().toString(36).slice(2,9); }
 async function loadStateFromFirestore(){
   try{
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
+    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {}, savingsBalance: [], investBalance: [] };
     if(!state.fixedExpenses) state.fixedExpenses = [];
     if(!state.fixedIncomes) state.fixedIncomes = [];
     if(!state.rates) state.rates = {};
+    if(!state.savingsBalance) state.savingsBalance = [];
+    if(!state.investBalance) state.investBalance = [];
   }catch(e){
     console.error(e);
-    state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
+    state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {}, savingsBalance: [], investBalance: [] };
     showToast('No se pudieron cargar tus datos');
   }
 }
@@ -597,12 +631,66 @@ function removeFixedIncome(id){
 window.removeFixedIncome = removeFixedIncome;
 
 function globalTotals(){
-  let savings = 0, invest = 0;
+  let savings = sum(state.savingsBalance||[]);
+  let invest = sum(state.investBalance||[]);
   Object.values(state.months||{}).forEach(m => {
     savings += sum(m.savings||[]);
     invest += sum(m.invest||[]);
   });
   return { savings, invest };
+}
+
+function addBalanceItem(kind){
+  const isS = kind === 'savings';
+  const nameEl = document.getElementById(isS ? 'savingsBalanceName' : 'investBalanceName');
+  const amountEl = document.getElementById(isS ? 'savingsBalanceAmount' : 'investBalanceAmount');
+  const curEl = document.getElementById(isS ? 'savingsBalanceCurrency' : 'investBalanceCurrency');
+  const name = nameEl.value.trim();
+  const amount = parseAmount(amountEl.value);
+  if(!name || isNaN(amount) || amount <= 0){
+    showToast('Completá nombre y monto válido');
+    return;
+  }
+  const key = isS ? 'savingsBalance' : 'investBalance';
+  if(!state[key]) state[key] = [];
+  state[key].push({ id: uid(), name, amount, currency: curEl.value });
+  nameEl.value = '';
+  amountEl.value = '';
+  saveState();
+  render();
+}
+
+function removeBalanceItem(kind, id){
+  const key = kind === 'savings' ? 'savingsBalance' : 'investBalance';
+  state[key] = (state[key]||[]).filter(i => i.id !== id);
+  saveState();
+  render();
+}
+window.removeBalanceItem = removeBalanceItem;
+
+function renderBalanceList(kind){
+  const isS = kind === 'savings';
+  const key = isS ? 'savingsBalance' : 'investBalance';
+  const data = state[key] || [];
+  const container = document.getElementById(isS ? 'listSavingsBalance' : 'listInvestBalance');
+  container.innerHTML = '';
+  if(data.length === 0){
+    container.innerHTML = `<div class="empty-hint">Todavía no cargaste ${isS ? 'tu ahorro' : 'tu inversión'} existente.</div>`;
+  } else {
+    data.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      const cur = item.currency || 'ARS';
+      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
+      row.innerHTML = `
+        <span class="name">${escapeHtml(item.name)}</span>
+        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
+        <button class="del" title="Eliminar" onclick="removeBalanceItem('${kind}','${item.id}')">✕</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+  document.getElementById(isS ? 'totalSavingsBalance' : 'totalInvestBalance').textContent = fmt(sum(data));
 }
 
 function copyPreviousMonth(){
@@ -696,6 +784,8 @@ document.getElementById('addInvestBtn').addEventListener('click', () =>
 
 document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
 document.getElementById('addFixedIncomeBtn').addEventListener('click', addFixedIncome);
+document.getElementById('addSavingsBalanceBtn').addEventListener('click', () => addBalanceItem('savings'));
+document.getElementById('addInvestBalanceBtn').addEventListener('click', () => addBalanceItem('invest'));
 document.getElementById('copyPrevBtn').addEventListener('click', copyPreviousMonth);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
@@ -807,6 +897,8 @@ function render(){
   TYPES.forEach(renderList);
   renderFixedList();
   renderFixedIncomeList();
+  renderBalanceList('savings');
+  renderBalanceList('invest');
 
   const hist = globalTotals();
   document.getElementById('histSavings').textContent = fmt(hist.savings);
