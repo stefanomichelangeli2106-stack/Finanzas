@@ -55,6 +55,7 @@
   .tag-savings .total{color:var(--green);}
   .tag-invest .total{color:var(--plum);}
   .tag-fixed .total{color:var(--gold);}
+  .tag-fixed-income .total{color:var(--blue);}
   .fixed-hint{font-size:12px;color:var(--ink-soft);margin:-6px 0 12px;line-height:1.4;}
   .item-row .cat.fixed-pill{background:var(--gold-tint);color:var(--gold);}
 
@@ -195,6 +196,17 @@
     </div>
   </div>
 
+  <div class="card tag-fixed-income">
+    <h2>Ingresos fijos <span class="total mono" id="totalFixedIncome">$0</span></h2>
+    <p class="fixed-hint">Se agregan solos todos los meses (ej: tu sueldo). Para que uno deje de repetirse, borralo de esta lista (no de "Ingresos").</p>
+    <div id="listFixedIncome"></div>
+    <div class="add-row">
+      <input class="f-name" id="fixedIncomeName" placeholder="Ej: Sueldo">
+      <input class="f-amount" id="fixedIncomeAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <button id="addFixedIncomeBtn">Agregar fijo</button>
+    </div>
+  </div>
+
   <div class="card tag-expense">
     <h2>Gastos <span class="total mono" id="totalExpense">$0</span></h2>
     <div id="listExpense"></div>
@@ -300,7 +312,7 @@ const CONF = {
 };
 
 let currentUser = null;
-let state = { months: {}, fixedExpenses: [] };
+let state = { months: {}, fixedExpenses: [], fixedIncomes: [] };
 let currentMonth = todayKey();
 
 function todayKey(){
@@ -310,11 +322,15 @@ function todayKey(){
 
 function getMonth(key){
   if(!state.months[key]){
-    const seeded = (state.fixedExpenses||[]).map(f => ({
+    const seededExpense = (state.fixedExpenses||[]).map(f => ({
       id: uid(), name: f.name, category: f.category, amount: f.amount,
       fixed: true, fixedId: f.id
     }));
-    state.months[key] = { income:[], expense: seeded, savings:[], invest:[] };
+    const seededIncome = (state.fixedIncomes||[]).map(f => ({
+      id: uid(), name: f.name, amount: f.amount,
+      fixed: true, fixedId: f.id
+    }));
+    state.months[key] = { income: seededIncome, expense: seededExpense, savings:[], invest:[] };
   }
   return state.months[key];
 }
@@ -338,11 +354,12 @@ function uid(){ return Math.random().toString(36).slice(2,9); }
 async function loadStateFromFirestore(){
   try{
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [] };
+    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [], fixedIncomes: [] };
     if(!state.fixedExpenses) state.fixedExpenses = [];
+    if(!state.fixedIncomes) state.fixedIncomes = [];
   }catch(e){
     console.error(e);
-    state = { months: {}, fixedExpenses: [] };
+    state = { months: {}, fixedExpenses: [], fixedIncomes: [] };
     showToast('No se pudieron cargar tus datos');
   }
 }
@@ -409,6 +426,33 @@ function removeFixedExpense(id){
   showToast('Ese gasto fijo ya no se va a repetir en los próximos meses');
 }
 window.removeFixedExpense = removeFixedExpense;
+
+function addFixedIncome(){
+  const nameEl = document.getElementById('fixedIncomeName');
+  const amountEl = document.getElementById('fixedIncomeAmount');
+  const name = nameEl.value.trim();
+  const amount = parseFloat(amountEl.value);
+  if(!name || isNaN(amount) || amount <= 0){
+    showToast('Completá nombre y monto válido');
+    return;
+  }
+  if(!state.fixedIncomes) state.fixedIncomes = [];
+  const tmpl = { id: uid(), name, amount };
+  state.fixedIncomes.push(tmpl);
+  getMonth(currentMonth).income.push({ id: uid(), name, amount, fixed:true, fixedId: tmpl.id });
+  nameEl.value = '';
+  amountEl.value = '';
+  saveState();
+  render();
+}
+
+function removeFixedIncome(id){
+  state.fixedIncomes = (state.fixedIncomes||[]).filter(f => f.id !== id);
+  saveState();
+  render();
+  showToast('Ese ingreso fijo ya no se va a repetir en los próximos meses');
+}
+window.removeFixedIncome = removeFixedIncome;
 
 function globalTotals(){
   let savings = 0, invest = 0;
@@ -505,6 +549,7 @@ document.getElementById('addInvestBtn').addEventListener('click', () =>
   addItem('invest', document.getElementById('investName'), document.getElementById('investAmount')));
 
 document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
+document.getElementById('addFixedIncomeBtn').addEventListener('click', addFixedIncome);
 document.getElementById('copyPrevBtn').addEventListener('click', copyPreviousMonth);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
@@ -550,6 +595,27 @@ function renderFixedList(){
   document.getElementById('totalFixed').textContent = fmt(sum(data));
 }
 
+function renderFixedIncomeList(){
+  const data = state.fixedIncomes || [];
+  const container = document.getElementById('listFixedIncome');
+  container.innerHTML = '';
+  if(data.length === 0){
+    container.innerHTML = '<div class="empty-hint">Todavía no marcaste ningún ingreso como fijo.</div>';
+  } else {
+    data.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <span class="name">${escapeHtml(item.name)}</span>
+        <span class="amount">${fmt(item.amount)}</span>
+        <button class="del" title="Eliminar" onclick="removeFixedIncome('${item.id}')">✕</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+  document.getElementById('totalFixedIncome').textContent = fmt(sum(data));
+}
+
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -562,6 +628,7 @@ function render(){
 
   TYPES.forEach(renderList);
   renderFixedList();
+  renderFixedIncomeList();
 
   const hist = globalTotals();
   document.getElementById('histSavings').textContent = fmt(hist.savings);
