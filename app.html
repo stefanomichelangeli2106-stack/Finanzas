@@ -452,11 +452,12 @@ function parseRate(str){
   return isNaN(n) ? null : n;
 }
 
-function fmtCur(n, currency){
+function fmtCur(n, currency, decimals){
   currency = currency || 'ARS';
+  decimals = decimals === undefined ? 0 : decimals;
   n = Number(n)||0;
   const symbol = (CURRENCIES[currency]||CURRENCIES.ARS).symbol;
-  return symbol + n.toLocaleString('es-AR', {maximumFractionDigits:0});
+  return symbol + n.toLocaleString('es-AR', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
 }
 
 function toARS(amount, currency){
@@ -719,7 +720,7 @@ function updateConverter(){
     resEl.textContent = 'Cargá la cotización de arriba';
     return;
   }
-  resEl.textContent = fmtCur(convert(amt, from, to), to);
+  resEl.textContent = fmtCur(convert(amt, from, to), to, 2);
 }
 document.getElementById('convAmount').addEventListener('input', updateConverter);
 document.getElementById('convFrom').addEventListener('change', updateConverter);
