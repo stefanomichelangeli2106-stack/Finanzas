@@ -54,6 +54,16 @@
   .tag-expense .total{color:var(--red);}
   .tag-savings .total{color:var(--green);}
   .tag-invest .total{color:var(--plum);}
+  .tag-fixed .total{color:var(--gold);}
+  .fixed-hint{font-size:12px;color:var(--ink-soft);margin:-6px 0 12px;line-height:1.4;}
+  .item-row .cat.fixed-pill{background:var(--gold-tint);color:var(--gold);}
+
+  .history-card{display:flex;gap:12px;margin-bottom:18px;}
+  .history-item{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(20,30,50,.05);}
+  .history-label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);margin-bottom:6px;}
+  .history-val{font-size:19px;font-weight:700;}
+  .history-val.savings{color:var(--green);}
+  .history-val.invest{color:var(--plum);}
 
   .item-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F1F4;}
   .item-row:last-of-type{border-bottom:none;}
@@ -164,6 +174,17 @@
     <div class="legend" id="legend"></div>
   </div>
 
+  <div class="history-card">
+    <div class="history-item">
+      <span class="history-label">Total ahorrado (histórico)</span>
+      <span class="history-val savings mono" id="histSavings">$0</span>
+    </div>
+    <div class="history-item">
+      <span class="history-label">Total invertido (histórico)</span>
+      <span class="history-val invest mono" id="histInvest">$0</span>
+    </div>
+  </div>
+
   <div class="card tag-income">
     <h2>Ingresos <span class="total mono" id="totalIncome">$0</span></h2>
     <div id="listIncome"></div>
@@ -190,6 +211,26 @@
       </select>
       <input class="f-amount" id="expenseAmount" type="number" placeholder="Monto" inputmode="decimal">
       <button id="addExpenseBtn">Agregar</button>
+    </div>
+  </div>
+
+  <div class="card tag-fixed">
+    <h2>Gastos fijos <span class="total mono" id="totalFixed">$0</span></h2>
+    <p class="fixed-hint">Se agregan solos todos los meses, sin que tengas que cargarlos de nuevo. Para que uno deje de repetirse, borralo de esta lista (no de "Gastos").</p>
+    <div id="listFixed"></div>
+    <div class="add-row">
+      <input class="f-name" id="fixedName" placeholder="Ej: Alquiler">
+      <select class="f-cat" id="fixedCat">
+        <option>Vivienda</option>
+        <option>Comida</option>
+        <option>Transporte</option>
+        <option>Servicios</option>
+        <option>Salud</option>
+        <option>Ocio</option>
+        <option>Otro</option>
+      </select>
+      <input class="f-amount" id="fixedAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <button id="addFixedBtn">Agregar fijo</button>
     </div>
   </div>
 
@@ -259,7 +300,7 @@ const CONF = {
 };
 
 let currentUser = null;
-let state = { months: {} };
+let state = { months: {}, fixedExpenses: [] };
 let currentMonth = todayKey();
 
 function todayKey(){
@@ -269,7 +310,11 @@ function todayKey(){
 
 function getMonth(key){
   if(!state.months[key]){
-    state.months[key] = { income:[], expense:[], savings:[], invest:[] };
+    const seeded = (state.fixedExpenses||[]).map(f => ({
+      id: uid(), name: f.name, category: f.category, amount: f.amount,
+      fixed: true, fixedId: f.id
+    }));
+    state.months[key] = { income:[], expense: seeded, savings:[], invest:[] };
   }
   return state.months[key];
 }
@@ -293,10 +338,11 @@ function uid(){ return Math.random().toString(36).slice(2,9); }
 async function loadStateFromFirestore(){
   try{
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {} };
+    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [] };
+    if(!state.fixedExpenses) state.fixedExpenses = [];
   }catch(e){
     console.error(e);
-    state = { months: {} };
+    state = { months: {}, fixedExpenses: [] };
     showToast('No se pudieron cargar tus datos');
   }
 }
@@ -335,6 +381,43 @@ function removeItem(type, id){
   render();
 }
 window.removeItem = removeItem;
+
+function addFixedExpense(){
+  const nameEl = document.getElementById('fixedName');
+  const amountEl = document.getElementById('fixedAmount');
+  const catEl = document.getElementById('fixedCat');
+  const name = nameEl.value.trim();
+  const amount = parseFloat(amountEl.value);
+  if(!name || isNaN(amount) || amount <= 0){
+    showToast('Completá nombre y monto válido');
+    return;
+  }
+  if(!state.fixedExpenses) state.fixedExpenses = [];
+  const tmpl = { id: uid(), name, category: catEl.value, amount };
+  state.fixedExpenses.push(tmpl);
+  getMonth(currentMonth).expense.push({ id: uid(), name, category: catEl.value, amount, fixed:true, fixedId: tmpl.id });
+  nameEl.value = '';
+  amountEl.value = '';
+  saveState();
+  render();
+}
+
+function removeFixedExpense(id){
+  state.fixedExpenses = (state.fixedExpenses||[]).filter(f => f.id !== id);
+  saveState();
+  render();
+  showToast('Ese gasto fijo ya no se va a repetir en los próximos meses');
+}
+window.removeFixedExpense = removeFixedExpense;
+
+function globalTotals(){
+  let savings = 0, invest = 0;
+  Object.values(state.months||{}).forEach(m => {
+    savings += sum(m.savings||[]);
+    invest += sum(m.invest||[]);
+  });
+  return { savings, invest };
+}
 
 function copyPreviousMonth(){
   const [y,m] = currentMonth.split('-').map(Number);
@@ -421,6 +504,7 @@ document.getElementById('addSavingsBtn').addEventListener('click', () =>
 document.getElementById('addInvestBtn').addEventListener('click', () =>
   addItem('invest', document.getElementById('investName'), document.getElementById('investAmount')));
 
+document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
 document.getElementById('copyPrevBtn').addEventListener('click', copyPreviousMonth);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
@@ -437,12 +521,33 @@ function renderList(type){
     const row = document.createElement('div');
     row.className = 'item-row';
     row.innerHTML = `
-      <span class="name">${escapeHtml(item.name)}${item.category ? `<span class="cat">${escapeHtml(item.category)}</span>` : ''}</span>
+      <span class="name">${escapeHtml(item.name)}${item.category ? `<span class="cat">${escapeHtml(item.category)}</span>` : ''}${item.fixed ? `<span class="cat fixed-pill">Fijo</span>` : ''}</span>
       <span class="amount">${fmt(item.amount)}</span>
       <button class="del" title="Eliminar" onclick="removeItem('${type}','${item.id}')">✕</button>
     `;
     container.appendChild(row);
   });
+}
+
+function renderFixedList(){
+  const data = state.fixedExpenses || [];
+  const container = document.getElementById('listFixed');
+  container.innerHTML = '';
+  if(data.length === 0){
+    container.innerHTML = '<div class="empty-hint">Todavía no marcaste ningún gasto como fijo.</div>';
+  } else {
+    data.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <span class="name">${escapeHtml(item.name)}<span class="cat">${escapeHtml(item.category)}</span></span>
+        <span class="amount">${fmt(item.amount)}</span>
+        <button class="del" title="Eliminar" onclick="removeFixedExpense('${item.id}')">✕</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+  document.getElementById('totalFixed').textContent = fmt(sum(data));
 }
 
 function escapeHtml(s){
@@ -456,6 +561,11 @@ function render(){
   const m = getMonth(currentMonth);
 
   TYPES.forEach(renderList);
+  renderFixedList();
+
+  const hist = globalTotals();
+  document.getElementById('histSavings').textContent = fmt(hist.savings);
+  document.getElementById('histInvest').textContent = fmt(hist.invest);
 
   const totals = {};
   TYPES.forEach(t => totals[t] = sum(m[t]));
