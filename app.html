@@ -68,6 +68,24 @@
   .tag-fixed-income .total{color:var(--blue);}
   .fixed-hint{font-size:12px;color:var(--ink-soft);margin:-6px 0 12px;line-height:1.4;}
   .item-row .cat.fixed-pill{background:var(--gold-tint);color:var(--gold);}
+  .item-row .fx-equiv{font-size:11px;color:var(--ink-soft);margin-left:6px;white-space:nowrap;}
+  .add-row .f-cur{flex:1;min-width:75px;}
+
+  .rate-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(20,30,50,.05);}
+  .rate-card h2{margin:0 0 4px;font-size:15px;}
+  .rate-hint{font-size:12px;color:var(--ink-soft);margin:0 0 12px;line-height:1.4;}
+  .rate-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .rate-field{flex:1;min-width:130px;}
+  .rate-field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px;}
+  .rate-field input{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:14px;font-family:'IBM Plex Mono',monospace;background:#FAFBFC;}
+  .rate-save{border:none;background:var(--blue);color:#fff;border-radius:9px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;}
+  .rate-save:hover{background:#164a9c;}
+
+  .converter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .converter-row input{flex:1;min-width:90px;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:14px;font-family:'IBM Plex Mono',monospace;background:#FAFBFC;}
+  .converter-row select{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:14px;background:#FAFBFC;}
+  .converter-row span{color:var(--ink-soft);}
+  .converter-result{margin-top:12px;font-size:20px;font-weight:700;text-align:center;font-family:'IBM Plex Mono',monospace;}
 
   .history-card{display:flex;gap:12px;margin-bottom:18px;}
   .history-item{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(20,30,50,.05);}
@@ -196,12 +214,52 @@
     </div>
   </div>
 
+  <div class="rate-card">
+    <h2>Tipo de cambio</h2>
+    <p class="rate-hint">Cargalo vos con la cotización del día (por ejemplo mirando dolarapi.com) — no se actualiza sola. Se usa para convertir a pesos todo lo que cargues en dólares o reales.</p>
+    <div class="rate-row">
+      <div class="rate-field">
+        <label>1 USD = ? ARS</label>
+        <input id="rateUSD" type="text" inputmode="decimal" placeholder="Ej: 1200">
+      </div>
+      <div class="rate-field">
+        <label>1 BRL = ? ARS</label>
+        <input id="rateBRL" type="text" inputmode="decimal" placeholder="Ej: 210">
+      </div>
+    </div>
+    <button class="rate-save" id="saveRatesBtn">Guardar cotización</button>
+  </div>
+
+  <div class="rate-card">
+    <h2>Conversor rápido</h2>
+    <div class="converter-row">
+      <input id="convAmount" type="text" inputmode="decimal" placeholder="Monto" value="1">
+      <select id="convFrom">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
+      <span>=</span>
+      <select id="convTo">
+        <option value="USD">USD</option>
+        <option value="ARS">ARS</option>
+        <option value="BRL">BRL</option>
+      </select>
+    </div>
+    <div class="converter-result" id="convResult">—</div>
+  </div>
+
   <div class="card tag-income">
     <h2>Ingresos <span class="total mono" id="totalIncome">$0</span></h2>
     <div id="listIncome"></div>
     <div class="add-row">
       <input class="f-name" id="incomeName" placeholder="Ej: Sueldo">
       <input class="f-amount" id="incomeAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="incomeCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addIncomeBtn">Agregar</button>
     </div>
   </div>
@@ -213,6 +271,11 @@
     <div class="add-row">
       <input class="f-name" id="fixedIncomeName" placeholder="Ej: Sueldo">
       <input class="f-amount" id="fixedIncomeAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="fixedIncomeCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addFixedIncomeBtn">Agregar fijo</button>
     </div>
   </div>
@@ -232,6 +295,11 @@
         <option>Otro</option>
       </select>
       <input class="f-amount" id="expenseAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="expenseCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addExpenseBtn">Agregar</button>
     </div>
   </div>
@@ -252,6 +320,11 @@
         <option>Otro</option>
       </select>
       <input class="f-amount" id="fixedAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="fixedCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addFixedBtn">Agregar fijo</button>
     </div>
   </div>
@@ -262,6 +335,11 @@
     <div class="add-row">
       <input class="f-name" id="savingsName" placeholder="Ej: Fondo de emergencia">
       <input class="f-amount" id="savingsAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="savingsCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addSavingsBtn">Agregar</button>
     </div>
   </div>
@@ -272,6 +350,11 @@
     <div class="add-row">
       <input class="f-name" id="investName" placeholder="Ej: Plazo fijo">
       <input class="f-amount" id="investAmount" type="text" placeholder="Monto" inputmode="decimal">
+      <select class="f-cur" id="investCurrency">
+        <option value="ARS">ARS</option>
+        <option value="USD">USD</option>
+        <option value="BRL">BRL</option>
+      </select>
       <button id="addInvestBtn">Agregar</button>
     </div>
   </div>
@@ -320,9 +403,14 @@ const CONF = {
   savings: {list:'listSavings', total:'totalSavings', color:'#1E8E5A', label:'Ahorro'},
   invest:  {list:'listInvest', total:'totalInvest', color:'#6C4E9C', label:'Inversión'},
 };
+const CURRENCIES = {
+  ARS: { symbol: '$' },
+  USD: { symbol: 'US$' },
+  BRL: { symbol: 'R$' }
+};
 
 let currentUser = null;
-let state = { months: {}, fixedExpenses: [], fixedIncomes: [] };
+let state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
 let currentMonth = todayKey();
 
 function todayKey(){
@@ -333,11 +421,11 @@ function todayKey(){
 function getMonth(key){
   if(!state.months[key]){
     const seededExpense = (state.fixedExpenses||[]).map(f => ({
-      id: uid(), name: f.name, category: f.category, amount: f.amount,
+      id: uid(), name: f.name, category: f.category, amount: f.amount, currency: f.currency || 'ARS',
       fixed: true, fixedId: f.id
     }));
     const seededIncome = (state.fixedIncomes||[]).map(f => ({
-      id: uid(), name: f.name, amount: f.amount,
+      id: uid(), name: f.name, amount: f.amount, currency: f.currency || 'ARS',
       fixed: true, fixedId: f.id
     }));
     state.months[key] = { income: seededIncome, expense: seededExpense, savings:[], invest:[] };
@@ -357,6 +445,37 @@ function parseAmount(str){
   return parseInt(digits, 10);
 }
 
+function parseRate(str){
+  if(str === null || str === undefined || str === '') return null;
+  const cleaned = String(str).trim().replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+
+function fmtCur(n, currency){
+  currency = currency || 'ARS';
+  n = Number(n)||0;
+  const symbol = (CURRENCIES[currency]||CURRENCIES.ARS).symbol;
+  return symbol + n.toLocaleString('es-AR', {maximumFractionDigits:0});
+}
+
+function toARS(amount, currency){
+  currency = currency || 'ARS';
+  amount = Number(amount)||0;
+  if(currency === 'ARS') return amount;
+  const rate = (state.rates||{})[currency];
+  return rate ? amount * rate : 0;
+}
+
+function convert(amount, from, to){
+  amount = Number(amount)||0;
+  if(from === to) return amount;
+  const ars = toARS(amount, from);
+  if(to === 'ARS') return ars;
+  const rate = (state.rates||{})[to];
+  return rate ? ars / rate : 0;
+}
+
 function monthLabelText(key){
   const [y,m] = key.split('-').map(Number);
   const d = new Date(y, m-1, 1);
@@ -371,12 +490,13 @@ function uid(){ return Math.random().toString(36).slice(2,9); }
 async function loadStateFromFirestore(){
   try{
     const snap = await getDoc(doc(db, 'users', currentUser.uid));
-    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [], fixedIncomes: [] };
+    state = (snap.exists() && snap.data().months) ? snap.data() : { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
     if(!state.fixedExpenses) state.fixedExpenses = [];
     if(!state.fixedIncomes) state.fixedIncomes = [];
+    if(!state.rates) state.rates = {};
   }catch(e){
     console.error(e);
-    state = { months: {}, fixedExpenses: [], fixedIncomes: [] };
+    state = { months: {}, fixedExpenses: [], fixedIncomes: [], rates: {} };
     showToast('No se pudieron cargar tus datos');
   }
 }
@@ -391,14 +511,14 @@ function saveState(){
 
 /* ---------- Presupuesto ---------- */
 
-function addItem(type, nameEl, amountEl, catEl){
+function addItem(type, nameEl, amountEl, catEl, curEl){
   const name = nameEl.value.trim();
   const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
   }
-  const item = { id: uid(), name, amount };
+  const item = { id: uid(), name, amount, currency: curEl ? curEl.value : 'ARS' };
   if(catEl) item.category = catEl.value;
   getMonth(currentMonth)[type].push(item);
   nameEl.value = '';
@@ -420,6 +540,7 @@ function addFixedExpense(){
   const nameEl = document.getElementById('fixedName');
   const amountEl = document.getElementById('fixedAmount');
   const catEl = document.getElementById('fixedCat');
+  const curEl = document.getElementById('fixedCurrency');
   const name = nameEl.value.trim();
   const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
@@ -427,9 +548,10 @@ function addFixedExpense(){
     return;
   }
   if(!state.fixedExpenses) state.fixedExpenses = [];
-  const tmpl = { id: uid(), name, category: catEl.value, amount };
+  const currency = curEl.value;
+  const tmpl = { id: uid(), name, category: catEl.value, amount, currency };
   state.fixedExpenses.push(tmpl);
-  getMonth(currentMonth).expense.push({ id: uid(), name, category: catEl.value, amount, fixed:true, fixedId: tmpl.id });
+  getMonth(currentMonth).expense.push({ id: uid(), name, category: catEl.value, amount, currency, fixed:true, fixedId: tmpl.id });
   nameEl.value = '';
   amountEl.value = '';
   saveState();
@@ -447,6 +569,7 @@ window.removeFixedExpense = removeFixedExpense;
 function addFixedIncome(){
   const nameEl = document.getElementById('fixedIncomeName');
   const amountEl = document.getElementById('fixedIncomeAmount');
+  const curEl = document.getElementById('fixedIncomeCurrency');
   const name = nameEl.value.trim();
   const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
@@ -454,9 +577,10 @@ function addFixedIncome(){
     return;
   }
   if(!state.fixedIncomes) state.fixedIncomes = [];
-  const tmpl = { id: uid(), name, amount };
+  const currency = curEl.value;
+  const tmpl = { id: uid(), name, amount, currency };
   state.fixedIncomes.push(tmpl);
-  getMonth(currentMonth).income.push({ id: uid(), name, amount, fixed:true, fixedId: tmpl.id });
+  getMonth(currentMonth).income.push({ id: uid(), name, amount, currency, fixed:true, fixedId: tmpl.id });
   nameEl.value = '';
   amountEl.value = '';
   saveState();
@@ -520,8 +644,12 @@ document.getElementById('importFile').addEventListener('change', e => {
       const parsed = JSON.parse(reader.result);
       if(parsed && parsed.months){
         state = parsed;
+        if(!state.rates) state.rates = {};
+        document.getElementById('rateUSD').value = state.rates.USD || '';
+        document.getElementById('rateBRL').value = state.rates.BRL || '';
         saveState();
         render();
+        updateConverter();
         showToast('Backup importado');
       } else {
         showToast('Archivo no válido');
@@ -557,19 +685,45 @@ document.getElementById('nextMonth').addEventListener('click', () => {
 });
 
 document.getElementById('addIncomeBtn').addEventListener('click', () =>
-  addItem('income', document.getElementById('incomeName'), document.getElementById('incomeAmount')));
+  addItem('income', document.getElementById('incomeName'), document.getElementById('incomeAmount'), null, document.getElementById('incomeCurrency')));
 document.getElementById('addExpenseBtn').addEventListener('click', () =>
-  addItem('expense', document.getElementById('expenseName'), document.getElementById('expenseAmount'), document.getElementById('expenseCat')));
+  addItem('expense', document.getElementById('expenseName'), document.getElementById('expenseAmount'), document.getElementById('expenseCat'), document.getElementById('expenseCurrency')));
 document.getElementById('addSavingsBtn').addEventListener('click', () =>
-  addItem('savings', document.getElementById('savingsName'), document.getElementById('savingsAmount')));
+  addItem('savings', document.getElementById('savingsName'), document.getElementById('savingsAmount'), null, document.getElementById('savingsCurrency')));
 document.getElementById('addInvestBtn').addEventListener('click', () =>
-  addItem('invest', document.getElementById('investName'), document.getElementById('investAmount')));
+  addItem('invest', document.getElementById('investName'), document.getElementById('investAmount'), null, document.getElementById('investCurrency')));
 
 document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
 document.getElementById('addFixedIncomeBtn').addEventListener('click', addFixedIncome);
 document.getElementById('copyPrevBtn').addEventListener('click', copyPreviousMonth);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+
+document.getElementById('saveRatesBtn').addEventListener('click', () => {
+  if(!state.rates) state.rates = {};
+  state.rates.USD = parseRate(document.getElementById('rateUSD').value);
+  state.rates.BRL = parseRate(document.getElementById('rateBRL').value);
+  saveState();
+  render();
+  updateConverter();
+  showToast('Cotización guardada');
+});
+
+function updateConverter(){
+  const amt = parseRate(document.getElementById('convAmount').value) || 0;
+  const from = document.getElementById('convFrom').value;
+  const to = document.getElementById('convTo').value;
+  const resEl = document.getElementById('convResult');
+  const missingRate = (cur) => cur !== 'ARS' && !(state.rates||{})[cur];
+  if(missingRate(from) || missingRate(to)){
+    resEl.textContent = 'Cargá la cotización de arriba';
+    return;
+  }
+  resEl.textContent = fmtCur(convert(amt, from, to), to);
+}
+document.getElementById('convAmount').addEventListener('input', updateConverter);
+document.getElementById('convFrom').addEventListener('change', updateConverter);
+document.getElementById('convTo').addEventListener('change', updateConverter);
 
 function renderList(type){
   const data = getMonth(currentMonth)[type];
@@ -582,9 +736,11 @@ function renderList(type){
   data.forEach(item => {
     const row = document.createElement('div');
     row.className = 'item-row';
+    const cur = item.currency || 'ARS';
+    const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
     row.innerHTML = `
       <span class="name">${escapeHtml(item.name)}${item.category ? `<span class="cat">${escapeHtml(item.category)}</span>` : ''}${item.fixed ? `<span class="cat fixed-pill">Fijo</span>` : ''}</span>
-      <span class="amount">${fmt(item.amount)}</span>
+      <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
       <button class="del" title="Eliminar" onclick="removeItem('${type}','${item.id}')">✕</button>
     `;
     container.appendChild(row);
@@ -601,9 +757,11 @@ function renderFixedList(){
     data.forEach(item => {
       const row = document.createElement('div');
       row.className = 'item-row';
+      const cur = item.currency || 'ARS';
+      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
       row.innerHTML = `
         <span class="name">${escapeHtml(item.name)}<span class="cat">${escapeHtml(item.category)}</span></span>
-        <span class="amount">${fmt(item.amount)}</span>
+        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
         <button class="del" title="Eliminar" onclick="removeFixedExpense('${item.id}')">✕</button>
       `;
       container.appendChild(row);
@@ -622,9 +780,11 @@ function renderFixedIncomeList(){
     data.forEach(item => {
       const row = document.createElement('div');
       row.className = 'item-row';
+      const cur = item.currency || 'ARS';
+      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
       row.innerHTML = `
         <span class="name">${escapeHtml(item.name)}</span>
-        <span class="amount">${fmt(item.amount)}</span>
+        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
         <button class="del" title="Eliminar" onclick="removeFixedIncome('${item.id}')">✕</button>
       `;
       container.appendChild(row);
@@ -637,7 +797,7 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function sum(arr){ return arr.reduce((a,i)=>a+Number(i.amount||0),0); }
+function sum(arr){ return (arr||[]).reduce((a,i)=>a+toARS(i.amount, i.currency),0); }
 
 function render(){
   document.getElementById('monthLabel').textContent = monthLabelText(currentMonth);
@@ -770,7 +930,10 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById('appContent').style.display = '';
     document.getElementById('userEmail').textContent = user.email;
     await loadStateFromFirestore();
+    document.getElementById('rateUSD').value = (state.rates && state.rates.USD) || '';
+    document.getElementById('rateBRL').value = (state.rates && state.rates.BRL) || '';
     render();
+    updateConverter();
   } else {
     currentUser = null;
     document.getElementById('appContent').style.display = 'none';
