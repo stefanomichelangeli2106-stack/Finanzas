@@ -64,12 +64,12 @@
   .tag-expense .total{color:var(--red);}
   .tag-savings .total{color:var(--green);}
   .tag-invest .total{color:var(--plum);}
-  .tag-fixed .total{color:var(--gold);}
-  .tag-fixed-income .total{color:var(--blue);}
-  .fixed-hint{font-size:12px;color:var(--ink-soft);margin:-6px 0 12px;line-height:1.4;}
   .item-row .cat.fixed-pill{background:var(--gold-tint);color:var(--gold);}
   .item-row .fx-equiv{font-size:11px;color:var(--ink-soft);margin-left:6px;white-space:nowrap;}
   .add-row .f-cur{flex:1;min-width:75px;}
+  .chk-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);background:#F3F5F8;border-radius:9px;padding:0 12px;white-space:nowrap;cursor:pointer;user-select:none;}
+  .chk-toggle input{margin:0;accent-color:var(--blue);}
+  .split-hint{font-size:11.5px;color:var(--ink-soft);margin:-8px 0 12px;}
 
   .rate-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(20,30,50,.05);}
   .rate-card h2{margin:0 0 4px;font-size:15px;}
@@ -214,38 +214,6 @@
     </div>
   </div>
 
-  <div class="card tag-savings">
-    <h2>Ya tenés ahorrado <span class="total mono" id="totalSavingsBalance">$0</span></h2>
-    <p class="fixed-hint">Plata que ya tenías ahorrada antes de usar la app (en la moneda que sea). No se resta de tu saldo mensual, solo se suma al "Total ahorrado" de arriba.</p>
-    <div id="listSavingsBalance"></div>
-    <div class="add-row">
-      <input class="f-name" id="savingsBalanceName" placeholder="Ej: Plazo fijo Banco X">
-      <input class="f-amount" id="savingsBalanceAmount" type="text" placeholder="Monto" inputmode="decimal">
-      <select class="f-cur" id="savingsBalanceCurrency">
-        <option value="ARS">ARS</option>
-        <option value="USD">USD</option>
-        <option value="BRL">BRL</option>
-      </select>
-      <button id="addSavingsBalanceBtn">Agregar</button>
-    </div>
-  </div>
-
-  <div class="card tag-invest">
-    <h2>Ya tenés invertido <span class="total mono" id="totalInvestBalance">$0</span></h2>
-    <p class="fixed-hint">Plata que ya tenías invertida antes de usar la app (en la moneda que sea). No se resta de tu saldo mensual, solo se suma al "Total invertido" de arriba.</p>
-    <div id="listInvestBalance"></div>
-    <div class="add-row">
-      <input class="f-name" id="investBalanceName" placeholder="Ej: Acciones">
-      <input class="f-amount" id="investBalanceAmount" type="text" placeholder="Monto" inputmode="decimal">
-      <select class="f-cur" id="investBalanceCurrency">
-        <option value="ARS">ARS</option>
-        <option value="USD">USD</option>
-        <option value="BRL">BRL</option>
-      </select>
-      <button id="addInvestBalanceBtn">Agregar</button>
-    </div>
-  </div>
-
   <div class="rate-card">
     <h2>Tipo de cambio</h2>
     <p class="rate-hint">Cargalo vos con la cotización del día (por ejemplo mirando dolarapi.com) — no se actualiza sola. Se usa para convertir a pesos todo lo que cargues en dólares o reales.</p>
@@ -292,23 +260,8 @@
         <option value="USD">USD</option>
         <option value="BRL">BRL</option>
       </select>
+      <label class="chk-toggle"><input type="checkbox" id="incomeFixed"> Fijo (todos los meses)</label>
       <button id="addIncomeBtn">Agregar</button>
-    </div>
-  </div>
-
-  <div class="card tag-fixed-income">
-    <h2>Ingresos fijos <span class="total mono" id="totalFixedIncome">$0</span></h2>
-    <p class="fixed-hint">Se agregan solos todos los meses (ej: tu sueldo). Para que uno deje de repetirse, borralo de esta lista (no de "Ingresos").</p>
-    <div id="listFixedIncome"></div>
-    <div class="add-row">
-      <input class="f-name" id="fixedIncomeName" placeholder="Ej: Sueldo">
-      <input class="f-amount" id="fixedIncomeAmount" type="text" placeholder="Monto" inputmode="decimal">
-      <select class="f-cur" id="fixedIncomeCurrency">
-        <option value="ARS">ARS</option>
-        <option value="USD">USD</option>
-        <option value="BRL">BRL</option>
-      </select>
-      <button id="addFixedIncomeBtn">Agregar fijo</button>
     </div>
   </div>
 
@@ -332,37 +285,14 @@
         <option value="USD">USD</option>
         <option value="BRL">BRL</option>
       </select>
+      <label class="chk-toggle"><input type="checkbox" id="expenseFixed"> Fijo (todos los meses)</label>
       <button id="addExpenseBtn">Agregar</button>
-    </div>
-  </div>
-
-  <div class="card tag-fixed">
-    <h2>Gastos fijos <span class="total mono" id="totalFixed">$0</span></h2>
-    <p class="fixed-hint">Se agregan solos todos los meses, sin que tengas que cargarlos de nuevo. Para que uno deje de repetirse, borralo de esta lista (no de "Gastos").</p>
-    <div id="listFixed"></div>
-    <div class="add-row">
-      <input class="f-name" id="fixedName" placeholder="Ej: Alquiler">
-      <select class="f-cat" id="fixedCat">
-        <option>Vivienda</option>
-        <option>Comida</option>
-        <option>Transporte</option>
-        <option>Servicios</option>
-        <option>Salud</option>
-        <option>Ocio</option>
-        <option>Otro</option>
-      </select>
-      <input class="f-amount" id="fixedAmount" type="text" placeholder="Monto" inputmode="decimal">
-      <select class="f-cur" id="fixedCurrency">
-        <option value="ARS">ARS</option>
-        <option value="USD">USD</option>
-        <option value="BRL">BRL</option>
-      </select>
-      <button id="addFixedBtn">Agregar fijo</button>
     </div>
   </div>
 
   <div class="card tag-savings">
     <h2>Ahorro <span class="total mono" id="totalSavings">$0</span></h2>
+    <p class="split-hint" id="savingsSplitHint"></p>
     <div id="listSavings"></div>
     <div class="add-row">
       <input class="f-name" id="savingsName" placeholder="Ej: Fondo de emergencia">
@@ -372,12 +302,14 @@
         <option value="USD">USD</option>
         <option value="BRL">BRL</option>
       </select>
+      <label class="chk-toggle"><input type="checkbox" id="savingsExisting"> Ya lo tenía (no resta este mes)</label>
       <button id="addSavingsBtn">Agregar</button>
     </div>
   </div>
 
   <div class="card tag-invest">
     <h2>Inversión <span class="total mono" id="totalInvest">$0</span></h2>
+    <p class="split-hint" id="investSplitHint"></p>
     <div id="listInvest"></div>
     <div class="add-row">
       <input class="f-name" id="investName" placeholder="Ej: Plazo fijo">
@@ -387,6 +319,7 @@
         <option value="USD">USD</option>
         <option value="BRL">BRL</option>
       </select>
+      <label class="chk-toggle"><input type="checkbox" id="investExisting"> Ya lo tenía (no resta este mes)</label>
       <button id="addInvestBtn">Agregar</button>
     </div>
   </div>
@@ -546,16 +479,32 @@ function saveState(){
 
 /* ---------- Presupuesto ---------- */
 
-function addItem(type, nameEl, amountEl, catEl, curEl){
+function addItem(type, nameEl, amountEl, catEl, curEl, fixedEl){
   const name = nameEl.value.trim();
   const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
   }
-  const item = { id: uid(), name, amount, currency: curEl ? curEl.value : 'ARS' };
-  if(catEl) item.category = catEl.value;
-  getMonth(currentMonth)[type].push(item);
+  const currency = curEl ? curEl.value : 'ARS';
+  const category = catEl ? catEl.value : undefined;
+
+  if(fixedEl && fixedEl.checked){
+    const key = type === 'income' ? 'fixedIncomes' : 'fixedExpenses';
+    if(!state[key]) state[key] = [];
+    const tmpl = { id: uid(), name, amount, currency };
+    if(category) tmpl.category = category;
+    state[key].push(tmpl);
+    const item = { id: uid(), name, amount, currency, fixed:true, fixedId: tmpl.id };
+    if(category) item.category = category;
+    getMonth(currentMonth)[type].push(item);
+    fixedEl.checked = false;
+  } else {
+    const item = { id: uid(), name, amount, currency };
+    if(category) item.category = category;
+    getMonth(currentMonth)[type].push(item);
+  }
+
   nameEl.value = '';
   amountEl.value = '';
   saveState();
@@ -565,70 +514,21 @@ function addItem(type, nameEl, amountEl, catEl, curEl){
 function removeItem(type, id){
   const arr = getMonth(currentMonth)[type];
   const idx = arr.findIndex(i => i.id === id);
-  if(idx > -1) arr.splice(idx,1);
+  if(idx === -1) return;
+  const item = arr[idx];
+  if(item.fixed){
+    const label = type === 'income' ? 'ingreso' : 'gasto';
+    const stopRepeating = confirm(`Este ${label} es fijo. ¿Querés que deje de repetirse los próximos meses?\n\nAceptar = no se repite más.\nCancelar = se borra solo este mes, sigue repitiéndose después.`);
+    if(stopRepeating){
+      const key = type === 'income' ? 'fixedIncomes' : 'fixedExpenses';
+      state[key] = (state[key]||[]).filter(f => f.id !== item.fixedId);
+    }
+  }
+  arr.splice(idx,1);
   saveState();
   render();
 }
 window.removeItem = removeItem;
-
-function addFixedExpense(){
-  const nameEl = document.getElementById('fixedName');
-  const amountEl = document.getElementById('fixedAmount');
-  const catEl = document.getElementById('fixedCat');
-  const curEl = document.getElementById('fixedCurrency');
-  const name = nameEl.value.trim();
-  const amount = parseAmount(amountEl.value);
-  if(!name || isNaN(amount) || amount <= 0){
-    showToast('Completá nombre y monto válido');
-    return;
-  }
-  if(!state.fixedExpenses) state.fixedExpenses = [];
-  const currency = curEl.value;
-  const tmpl = { id: uid(), name, category: catEl.value, amount, currency };
-  state.fixedExpenses.push(tmpl);
-  getMonth(currentMonth).expense.push({ id: uid(), name, category: catEl.value, amount, currency, fixed:true, fixedId: tmpl.id });
-  nameEl.value = '';
-  amountEl.value = '';
-  saveState();
-  render();
-}
-
-function removeFixedExpense(id){
-  state.fixedExpenses = (state.fixedExpenses||[]).filter(f => f.id !== id);
-  saveState();
-  render();
-  showToast('Ese gasto fijo ya no se va a repetir en los próximos meses');
-}
-window.removeFixedExpense = removeFixedExpense;
-
-function addFixedIncome(){
-  const nameEl = document.getElementById('fixedIncomeName');
-  const amountEl = document.getElementById('fixedIncomeAmount');
-  const curEl = document.getElementById('fixedIncomeCurrency');
-  const name = nameEl.value.trim();
-  const amount = parseAmount(amountEl.value);
-  if(!name || isNaN(amount) || amount <= 0){
-    showToast('Completá nombre y monto válido');
-    return;
-  }
-  if(!state.fixedIncomes) state.fixedIncomes = [];
-  const currency = curEl.value;
-  const tmpl = { id: uid(), name, amount, currency };
-  state.fixedIncomes.push(tmpl);
-  getMonth(currentMonth).income.push({ id: uid(), name, amount, currency, fixed:true, fixedId: tmpl.id });
-  nameEl.value = '';
-  amountEl.value = '';
-  saveState();
-  render();
-}
-
-function removeFixedIncome(id){
-  state.fixedIncomes = (state.fixedIncomes||[]).filter(f => f.id !== id);
-  saveState();
-  render();
-  showToast('Ese ingreso fijo ya no se va a repetir en los próximos meses');
-}
-window.removeFixedIncome = removeFixedIncome;
 
 function globalTotals(){
   let savings = sum(state.savingsBalance||[]);
@@ -640,20 +540,26 @@ function globalTotals(){
   return { savings, invest };
 }
 
-function addBalanceItem(kind){
-  const isS = kind === 'savings';
-  const nameEl = document.getElementById(isS ? 'savingsBalanceName' : 'investBalanceName');
-  const amountEl = document.getElementById(isS ? 'savingsBalanceAmount' : 'investBalanceAmount');
-  const curEl = document.getElementById(isS ? 'savingsBalanceCurrency' : 'investBalanceCurrency');
+function addSavingsOrInvest(kind){
+  const nameEl = document.getElementById(kind+'Name');
+  const amountEl = document.getElementById(kind+'Amount');
+  const curEl = document.getElementById(kind+'Currency');
+  const existingEl = document.getElementById(kind+'Existing');
   const name = nameEl.value.trim();
   const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
   }
-  const key = isS ? 'savingsBalance' : 'investBalance';
-  if(!state[key]) state[key] = [];
-  state[key].push({ id: uid(), name, amount, currency: curEl.value });
+  const currency = curEl.value;
+  if(existingEl.checked){
+    const key = kind === 'savings' ? 'savingsBalance' : 'investBalance';
+    if(!state[key]) state[key] = [];
+    state[key].push({ id: uid(), name, amount, currency });
+    existingEl.checked = false;
+  } else {
+    getMonth(currentMonth)[kind].push({ id: uid(), name, amount, currency });
+  }
   nameEl.value = '';
   amountEl.value = '';
   saveState();
@@ -668,29 +574,42 @@ function removeBalanceItem(kind, id){
 }
 window.removeBalanceItem = removeBalanceItem;
 
-function renderBalanceList(kind){
-  const isS = kind === 'savings';
-  const key = isS ? 'savingsBalance' : 'investBalance';
-  const data = state[key] || [];
-  const container = document.getElementById(isS ? 'listSavingsBalance' : 'listInvestBalance');
+function renderSavingsOrInvestList(kind){
+  const monthly = getMonth(currentMonth)[kind] || [];
+  const balanceKey = kind === 'savings' ? 'savingsBalance' : 'investBalance';
+  const balanceItems = state[balanceKey] || [];
+  const container = document.getElementById(CONF[kind].list);
   container.innerHTML = '';
-  if(data.length === 0){
-    container.innerHTML = `<div class="empty-hint">Todavía no cargaste ${isS ? 'tu ahorro' : 'tu inversión'} existente.</div>`;
+
+  const renderRow = (item, isExisting) => {
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    const cur = item.currency || 'ARS';
+    const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
+    const pill = isExisting ? `<span class="cat fixed-pill">Ya tenía</span>` : '';
+    const delAttr = isExisting ? `removeBalanceItem('${kind}','${item.id}')` : `removeItem('${kind}','${item.id}')`;
+    row.innerHTML = `
+      <span class="name">${escapeHtml(item.name)}${pill}</span>
+      <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
+      <button class="del" title="Eliminar" onclick="${delAttr}">✕</button>
+    `;
+    container.appendChild(row);
+  };
+
+  if(monthly.length === 0 && balanceItems.length === 0){
+    container.innerHTML = '<div class="empty-hint">Todavía no agregaste nada acá.</div>';
   } else {
-    data.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      const cur = item.currency || 'ARS';
-      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
-      row.innerHTML = `
-        <span class="name">${escapeHtml(item.name)}</span>
-        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
-        <button class="del" title="Eliminar" onclick="removeBalanceItem('${kind}','${item.id}')">✕</button>
-      `;
-      container.appendChild(row);
-    });
+    monthly.forEach(item => renderRow(item, false));
+    balanceItems.forEach(item => renderRow(item, true));
   }
-  document.getElementById(isS ? 'totalSavingsBalance' : 'totalInvestBalance').textContent = fmt(sum(data));
+
+  const monthlyTotal = sum(monthly);
+  const existingTotal = sum(balanceItems);
+  document.getElementById(CONF[kind].total).textContent = fmt(monthlyTotal + existingTotal);
+  const label = kind === 'savings' ? 'ahorraste' : 'invertiste';
+  document.getElementById(kind+'SplitHint').textContent =
+    `Este mes ${label} ${fmt(monthlyTotal)} · Ya tenías ${fmt(existingTotal)} (no resta de este mes)`;
+  return monthlyTotal;
 }
 
 function copyPreviousMonth(){
@@ -774,18 +693,12 @@ document.getElementById('nextMonth').addEventListener('click', () => {
 });
 
 document.getElementById('addIncomeBtn').addEventListener('click', () =>
-  addItem('income', document.getElementById('incomeName'), document.getElementById('incomeAmount'), null, document.getElementById('incomeCurrency')));
+  addItem('income', document.getElementById('incomeName'), document.getElementById('incomeAmount'), null, document.getElementById('incomeCurrency'), document.getElementById('incomeFixed')));
 document.getElementById('addExpenseBtn').addEventListener('click', () =>
-  addItem('expense', document.getElementById('expenseName'), document.getElementById('expenseAmount'), document.getElementById('expenseCat'), document.getElementById('expenseCurrency')));
-document.getElementById('addSavingsBtn').addEventListener('click', () =>
-  addItem('savings', document.getElementById('savingsName'), document.getElementById('savingsAmount'), null, document.getElementById('savingsCurrency')));
-document.getElementById('addInvestBtn').addEventListener('click', () =>
-  addItem('invest', document.getElementById('investName'), document.getElementById('investAmount'), null, document.getElementById('investCurrency')));
+  addItem('expense', document.getElementById('expenseName'), document.getElementById('expenseAmount'), document.getElementById('expenseCat'), document.getElementById('expenseCurrency'), document.getElementById('expenseFixed')));
+document.getElementById('addSavingsBtn').addEventListener('click', () => addSavingsOrInvest('savings'));
+document.getElementById('addInvestBtn').addEventListener('click', () => addSavingsOrInvest('invest'));
 
-document.getElementById('addFixedBtn').addEventListener('click', addFixedExpense);
-document.getElementById('addFixedIncomeBtn').addEventListener('click', addFixedIncome);
-document.getElementById('addSavingsBalanceBtn').addEventListener('click', () => addBalanceItem('savings'));
-document.getElementById('addInvestBalanceBtn').addEventListener('click', () => addBalanceItem('invest'));
 document.getElementById('copyPrevBtn').addEventListener('click', copyPreviousMonth);
 document.getElementById('exportBtn').addEventListener('click', exportData);
 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
@@ -838,52 +751,6 @@ function renderList(type){
   });
 }
 
-function renderFixedList(){
-  const data = state.fixedExpenses || [];
-  const container = document.getElementById('listFixed');
-  container.innerHTML = '';
-  if(data.length === 0){
-    container.innerHTML = '<div class="empty-hint">Todavía no marcaste ningún gasto como fijo.</div>';
-  } else {
-    data.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      const cur = item.currency || 'ARS';
-      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
-      row.innerHTML = `
-        <span class="name">${escapeHtml(item.name)}<span class="cat">${escapeHtml(item.category)}</span></span>
-        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
-        <button class="del" title="Eliminar" onclick="removeFixedExpense('${item.id}')">✕</button>
-      `;
-      container.appendChild(row);
-    });
-  }
-  document.getElementById('totalFixed').textContent = fmt(sum(data));
-}
-
-function renderFixedIncomeList(){
-  const data = state.fixedIncomes || [];
-  const container = document.getElementById('listFixedIncome');
-  container.innerHTML = '';
-  if(data.length === 0){
-    container.innerHTML = '<div class="empty-hint">Todavía no marcaste ningún ingreso como fijo.</div>';
-  } else {
-    data.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item-row';
-      const cur = item.currency || 'ARS';
-      const equiv = cur !== 'ARS' ? `<span class="fx-equiv">≈ ${fmt(toARS(item.amount, cur))}</span>` : '';
-      row.innerHTML = `
-        <span class="name">${escapeHtml(item.name)}</span>
-        <span class="amount">${fmtCur(item.amount, cur)}${equiv}</span>
-        <button class="del" title="Eliminar" onclick="removeFixedIncome('${item.id}')">✕</button>
-      `;
-      container.appendChild(row);
-    });
-  }
-  document.getElementById('totalFixedIncome').textContent = fmt(sum(data));
-}
-
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -894,11 +761,9 @@ function render(){
   document.getElementById('monthLabel').textContent = monthLabelText(currentMonth);
   const m = getMonth(currentMonth);
 
-  TYPES.forEach(renderList);
-  renderFixedList();
-  renderFixedIncomeList();
-  renderBalanceList('savings');
-  renderBalanceList('invest');
+  ['income','expense'].forEach(renderList);
+  renderSavingsOrInvestList('savings');
+  renderSavingsOrInvestList('invest');
 
   const hist = globalTotals();
   document.getElementById('histSavings').textContent = fmt(hist.savings);
@@ -909,8 +774,6 @@ function render(){
 
   document.getElementById('totalIncome').textContent = fmt(totals.income);
   document.getElementById('totalExpense').textContent = fmt(totals.expense);
-  document.getElementById('totalSavings').textContent = fmt(totals.savings);
-  document.getElementById('totalInvest').textContent = fmt(totals.invest);
 
   const balance = totals.income - totals.expense - totals.savings - totals.invest;
   const balEl = document.getElementById('balanceVal');
