@@ -201,7 +201,7 @@
     <div id="listIncome"></div>
     <div class="add-row">
       <input class="f-name" id="incomeName" placeholder="Ej: Sueldo">
-      <input class="f-amount" id="incomeAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="incomeAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addIncomeBtn">Agregar</button>
     </div>
   </div>
@@ -212,7 +212,7 @@
     <div id="listFixedIncome"></div>
     <div class="add-row">
       <input class="f-name" id="fixedIncomeName" placeholder="Ej: Sueldo">
-      <input class="f-amount" id="fixedIncomeAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="fixedIncomeAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addFixedIncomeBtn">Agregar fijo</button>
     </div>
   </div>
@@ -231,7 +231,7 @@
         <option>Ocio</option>
         <option>Otro</option>
       </select>
-      <input class="f-amount" id="expenseAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="expenseAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addExpenseBtn">Agregar</button>
     </div>
   </div>
@@ -251,7 +251,7 @@
         <option>Ocio</option>
         <option>Otro</option>
       </select>
-      <input class="f-amount" id="fixedAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="fixedAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addFixedBtn">Agregar fijo</button>
     </div>
   </div>
@@ -261,7 +261,7 @@
     <div id="listSavings"></div>
     <div class="add-row">
       <input class="f-name" id="savingsName" placeholder="Ej: Fondo de emergencia">
-      <input class="f-amount" id="savingsAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="savingsAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addSavingsBtn">Agregar</button>
     </div>
   </div>
@@ -271,7 +271,7 @@
     <div id="listInvest"></div>
     <div class="add-row">
       <input class="f-name" id="investName" placeholder="Ej: Plazo fijo">
-      <input class="f-amount" id="investAmount" type="number" placeholder="Monto" inputmode="decimal">
+      <input class="f-amount" id="investAmount" type="text" placeholder="Monto" inputmode="decimal">
       <button id="addInvestBtn">Agregar</button>
     </div>
   </div>
@@ -350,6 +350,13 @@ function fmt(n){
   return '$' + n.toLocaleString('es-AR', {maximumFractionDigits:0});
 }
 
+function parseAmount(str){
+  if(str === null || str === undefined) return NaN;
+  const digits = String(str).replace(/[^\d-]/g, '');
+  if(digits === '' || digits === '-') return NaN;
+  return parseInt(digits, 10);
+}
+
 function monthLabelText(key){
   const [y,m] = key.split('-').map(Number);
   const d = new Date(y, m-1, 1);
@@ -386,7 +393,7 @@ function saveState(){
 
 function addItem(type, nameEl, amountEl, catEl){
   const name = nameEl.value.trim();
-  const amount = parseFloat(amountEl.value);
+  const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
@@ -414,7 +421,7 @@ function addFixedExpense(){
   const amountEl = document.getElementById('fixedAmount');
   const catEl = document.getElementById('fixedCat');
   const name = nameEl.value.trim();
-  const amount = parseFloat(amountEl.value);
+  const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
@@ -441,7 +448,7 @@ function addFixedIncome(){
   const nameEl = document.getElementById('fixedIncomeName');
   const amountEl = document.getElementById('fixedIncomeAmount');
   const name = nameEl.value.trim();
-  const amount = parseFloat(amountEl.value);
+  const amount = parseAmount(amountEl.value);
   if(!name || isNaN(amount) || amount <= 0){
     showToast('Completá nombre y monto válido');
     return;
