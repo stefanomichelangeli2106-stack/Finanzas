@@ -93,6 +93,7 @@
   .history-val{font-size:19px;font-weight:700;}
   .history-val.savings{color:var(--green);}
   .history-val.invest{color:var(--plum);}
+  .history-usd{display:block;font-size:12px;color:var(--ink-soft);margin-top:4px;}
 
   .item-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F1F4;}
   .item-row:last-of-type{border-bottom:none;}
@@ -207,10 +208,12 @@
     <div class="history-item">
       <span class="history-label">Total ahorrado (histórico)</span>
       <span class="history-val savings mono" id="histSavings">$0</span>
+      <span class="history-usd mono" id="histSavingsUSD"></span>
     </div>
     <div class="history-item">
       <span class="history-label">Total invertido (histórico)</span>
       <span class="history-val invest mono" id="histInvest">$0</span>
+      <span class="history-usd mono" id="histInvestUSD"></span>
     </div>
   </div>
 
@@ -768,6 +771,13 @@ function render(){
   const hist = globalTotals();
   document.getElementById('histSavings').textContent = fmt(hist.savings);
   document.getElementById('histInvest').textContent = fmt(hist.invest);
+  const usdRate = (state.rates||{}).USD;
+  document.getElementById('histSavingsUSD').textContent = usdRate
+    ? '≈ ' + fmtCur(convert(hist.savings, 'ARS', 'USD'), 'USD', 2)
+    : 'Cargá el tipo de cambio para verlo en USD';
+  document.getElementById('histInvestUSD').textContent = usdRate
+    ? '≈ ' + fmtCur(convert(hist.invest, 'ARS', 'USD'), 'USD', 2)
+    : 'Cargá el tipo de cambio para verlo en USD';
 
   const totals = {};
   TYPES.forEach(t => totals[t] = sum(m[t]));
